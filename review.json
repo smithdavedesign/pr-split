@@ -1,0 +1,65 @@
+{
+  "verdict": "pass",
+  "score": 3,
+  "summary": "The pain is real, but GitHub's native stacked PRs and the coding agents are absorbing it, and four free splitters already exist. File-level LLM splitting also tends to break builds, and there is no evidence anyone would pay.",
+  "forcingQuestions": {
+    "demand": {
+      "score": 3,
+      "evidence": "Evidence covers the problem (review complaints 3.8% to 4.8%, dev.to; GitHub blog on agent-decomposed stacks) but nothing shows anyone wants or would pay for a separate tool. Four free competitors already listed in RESEARCH.md."
+    },
+    "statusQuo": {
+      "score": 4,
+      "evidence": "Manual git add -p / rebase, or simply asking Claude Code/Cursor to split the branch. Cheap and improving; the tool's validation loop is the only edge."
+    },
+    "specificity": {
+      "score": 2,
+      "evidence": "PRD names only categories (individual developers, teams, maintainers). No named person, role or consequence."
+    },
+    "wedge": {
+      "score": 4,
+      "evidence": "A read-only split plan is what Tessl and a plain prompt already do. The valuable version (build-verified, hunk-level) is hard and the PRD excludes hunk-level splitting."
+    },
+    "futureFit": {
+      "score": 3,
+      "evidence": "Platform-native stacks and agents that decompose their own work make a standalone splitter less essential over three years."
+    }
+  },
+  "premises": [
+    "Large PRs are a painful bottleneck: supported by dev.to data and the GitHub blog.",
+    "A separate tool is the right fix: not supported; GitHub and agents are absorbing it and free tools exist.",
+    "LLM file-level grouping yields independently buildable PRs: doubtful, cross-file dependencies are an open question in the PRD.",
+    "Developers will let a tool create branches and PRs automatically: unverified.",
+    "A solo CLI has a path to revenue: no evidence."
+  ],
+  "alternatives": [
+    "Minimal: a Claude Code skill/prompt that proposes a split and runs validation (Tessl already does this).",
+    "Extend David's PR Receipt idea (ideas/pr-receipt) with a PR-size signal; nearer-term measurable pain.",
+    "Ideal: hunk-level, build-verified stacking engine as a GitHub App; large effort and exposed to GitHub's roadmap.",
+    "Lateral: a PR-size-gate GitHub Action that comments a suggested split plan."
+  ],
+  "wedge": "A read-only GitHub Action that comments a suggested split plan on PRs over N files; still undifferentiated from free alternatives.",
+  "feasibility": {
+    "m1Weekend": true,
+    "zeroCost": false,
+    "notes": "Node/TypeScript CLI with local Ollama is buildable in a weekend, but a hosted LLM-backed service is not $0 and a free local CLI has no revenue path. The one test: on three real 20+ file branches, each proposed group builds and passes tests in order; expected to fail on at least one."
+  },
+  "risks": [
+    "Platform absorption: GitHub native stacked PRs and agent-built decomposition",
+    "File-level splits break builds; dependency detection needs per-language analysis",
+    "Four free incumbents and no price point for a solo CLI",
+    "Trust barrier for tools that rewrite branches and open PRs",
+    "No path from free CLI to revenue"
+  ],
+  "killCriteria": "Drop if: fewer than 5 of 50 visitors sign up in two weeks; the build-verified test fails on 2 of 3 real branches; GitHub or Claude Code ships agent-driven splitting covering the use case; or nobody names a team that would pay.",
+  "landing": {
+    "headline": "",
+    "subhead": "",
+    "bullets": [],
+    "cta": "",
+    "audience": ""
+  },
+  "launch": {
+    "channels": [],
+    "post": ""
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "title": "PR Splitter AI — Automated pull request splitting into reviewable stacks",
+  "repoName": "pr-split",
+  "oneLiner": "For developers overwhelmed by large PRs, AI analyzes changes and creates stacked, reviewable pull requests with dependency-aware splits.",
+  "overlaps": "none",
+  "tags": [
+    "dev-tools",
+    "ai"
+  ],
+  "effort": "Medium",
+  "confidence": "Medium",
+  "sources": [
+    "https://dev.to/kelly_lewandowski_845215e/code-review-is-the-only-bottleneck-thats-growing-we-have-the-data-9e5",
+    "https://engineering.zenity.io/p/how-to-split-large-prs-using-ai-a-practical-guide-c435",
+    "https://github.blog/engineering/turn-one-giant-ai-generated-pull-request-to-a-reviewable-stack/",
+    "https://seriousben.com/posts/2025-07-splitting-large-prs-ai-era/",
+    "https://kit.cased.com/pr-reviewer/",
+    "https://github.com/DiffEnder/pr-splitter",
+    "https://tessl.io/registry/skills/github/stacklok/toolhive/split-pr",
+    "https://github.com/danielsinai/pr-splitter",
+    "https://github.com/xpepper/gh-pr-summarise",
+    "https://github.com/flows-network/github-pr-summary",
+    "https://pypi.org/project/usepr/",
+    "https://github.blog/engineering/turn-one-giant-ai-generated-pull-request-to-a-reviewable-stack",
+    "https://seriousben.com/posts/2025-07-splitting-large-prs-ai-era"
+  ],
+  "slug": "pr-split",
+  "recordedAt": "2026-10-10T17:43:23.761Z"
+}
