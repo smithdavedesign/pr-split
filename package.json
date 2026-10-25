@@ -1,0 +1,38 @@
+{
+  "name": "pr-split",
+  "version": "0.3.0",
+  "description": "Split a large feature branch into a stack of small, reviewable pull requests: plan the layers, build and validate each one, then open them on GitHub as a linked stack.",
+  "type": "module",
+  "bin": {
+    "pr-split": "bin/pr-split.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "engines": {
+    "node": ">=20.10"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "start": "node bin/pr-split.js",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "keywords": [
+    "git",
+    "pull-request",
+    "stacked-prs",
+    "code-review",
+    "ollama",
+    "cli"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "marked": "^18.1.1",
+    "playwright-core": "^1.64.1",
+    "vitest": "^5.0.5"
+  }
+}
