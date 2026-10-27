@@ -1,0 +1,28 @@
+# Runs the test suite on every push and pull request. Free on public repos (and within the
+# free minutes of private ones). The suite builds real git repos and runs `pr-split --execute`
+# in them with CI=true, so this is also the M2 "in a CI environment" check. The M3 PR tests use a
+# stand-in gh (test/fake-gh.mjs), so no GitHub token or network access is needed.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # vitest 5 needs Node ^22.12 or >=24; the CLI itself runs on Node >=20.10.
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
