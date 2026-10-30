@@ -16,6 +16,7 @@
   "scripts": {
     "test": "vitest run",
     "start": "node bin/pr-split.js",
+    "build": "node site/build.mjs",
     "screenshots": "node scripts/screenshots.mjs"
   },
   "keywords": [

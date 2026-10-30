@@ -1,13 +1,16 @@
-// npm run screenshots: runs pr-split for real on a sample repository and screenshots the result.
-// pr-split is a CLI, so the "app" here is a small local web server showing (1) the plan a dry run
-// prints, (2) the output of `--execute --pr`, and (3) the pull request it opened, rendered from the
-// GitHub stand-in the tests use (test/fake-gh.mjs; there is no network in the build sandbox).
-// Chromium comes from $CHROMIUM_PATH; no browser is downloaded. Writes docs/screenshots/*.png.
+// npm run screenshots: screenshots the website and pr-split doing its job, at desktop and phone size.
+// 1. The website: the production build (site/build.mjs, what Vercel serves) with a placeholder
+//    STRIPE_PAYMENT_LINK, so the Buy button shows.
+// 2. pr-split is a CLI, so its run is shown on plain pages: the output of `--execute --pr` on a
+//    sample repository, and the pull request it opened, rendered from the GitHub stand-in the tests
+//    use (test/fake-gh.mjs; there is no network in the build sandbox).
+// One local server serves both. Chromium comes from $CHROMIUM_PATH; no browser is downloaded.
+// Writes docs/screenshots/*.png and removes any older PNG there.
 import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import http from 'node:http';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
 import { chromium, devices } from 'playwright-core';
@@ -16,8 +19,8 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const BIN = join(ROOT, 'bin/pr-split.js');
 const FAKE_GH = join(ROOT, 'test/fake-gh.mjs');
 const OUT = join(ROOT, 'docs/screenshots');
-const PLAN_ARGS = ['--base', 'main', '--pr', '--issue', '42', '--no-llm'];
 const RUN_ARGS = ['--base', 'main', '--execute', '--pr', '--issue', '42', '--no-llm'];
+const PLACEHOLDER_PAYMENT_LINK = 'https://example.com/pay';
 
 if (!process.env.CHROMIUM_PATH) {
   console.error('screenshots: set CHROMIUM_PATH to a Chromium binary (no browser is downloaded)');
@@ -135,11 +138,10 @@ function prSplit(args) {
   return { command: `pr-split ${args.join(' ')}`, output: result.stdout.replaceAll(work, '/tmp'), status: result.status };
 }
 
-const plan = prSplit(PLAN_ARGS);
 const run = prSplit(RUN_ARGS);
-if (plan.status !== 0 || run.status !== 0) {
-  console.error(plan.output, run.output);
-  throw new Error(`pr-split failed (exit ${plan.status} / ${run.status})`);
+if (run.status !== 0) {
+  console.error(run.output);
+  throw new Error(`pr-split failed (exit ${run.status})`);
 }
 const github = JSON.parse(readFileSync(state, 'utf8'));
 const pr = github.prs[1];
@@ -206,15 +208,11 @@ function terminal({ command, output }) {
 
 const linkRefs = (html) => html.replace(/(^|[\s(>])#(\d+)\b/g, '$1<a href="#">#$2</a>');
 const pages = {
-  '/plan': page(
-    'pr-split: the plan',
-    `<h1>1. The plan (dry run)</h1><p class="note">Run on the 9-file branch <code>feature/order-history</code>. Nothing is changed yet; it writes <code>pr-split.sh</code> and shows what <code>--execute --pr</code> will do.</p>${terminal(plan)}`,
-  ),
-  '/run': page(
+  '/demo/run': page(
     'pr-split: execute and open the PRs',
-    `<h1>2. Build, validate, push, open the stacked PRs</h1><p class="note">Each layer is built on the one below it and must pass <code>build</code> and <code>lint</code> before anything is pushed or opened.</p>${terminal(run)}`,
+    `<h1>Build, validate, push, open the stacked PRs</h1><p class="note">Run on the 9-file branch <code>feature/order-history</code>. Each layer is built on the one below it and must pass <code>build</code> and <code>lint</code> before anything is pushed or opened.</p>${terminal(run)}`,
   ),
-  '/pr': page(
+  '/demo/pr': page(
     `${pr.title} #${pr.number}`,
     `<div class="pr-head"><h1>${escape(pr.title)} <span class="num">#${pr.number}</span></h1>
 <p><span class="state">Open</span><b>shop-dev</b> wants to merge 1 commit into <code class="branch">${escape(pr.baseRefName)}</code> from <code class="branch">${escape(pr.headRefName)}</code> · stack ${pr.stack.number}, PR ${pr.stack.position} of ${pr.stack.size}</p></div>
@@ -223,18 +221,50 @@ const pages = {
   ),
 };
 
+// --- The website: the production build, with a placeholder payment link -------------------------
+
+const site = join(work, 'site');
+const build = spawnSync(process.execPath, [join(ROOT, 'site/build.mjs'), '--out', site], {
+  env: { PATH: process.env.PATH, STRIPE_PAYMENT_LINK: PLACEHOLDER_PAYMENT_LINK },
+  encoding: 'utf8',
+});
+if (build.status !== 0) throw new Error(`site build failed: ${build.stderr}`);
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml',
+};
+const SITE_FILES = new Set(readdirSync(site));
+/** A built file for a URL path, the way Vercel serves dist/ with cleanUrls; only files the build wrote. */
+function siteFile(path) {
+  const name = path === '/' ? 'index.html' : path.slice(1);
+  const file = [name, `${name}.html`].find((candidate) => SITE_FILES.has(candidate));
+  return file ? join(site, file) : null;
+}
+
 // --- Serve, screenshot, stop ---------------------------------------------------------------------
 
 const server = http.createServer((req, res) => {
-  const html = pages[req.url];
-  res.writeHead(html ? 200 : 404, { 'content-type': 'text/html; charset=utf-8' });
-  res.end(html ?? 'not found');
+  const { pathname } = new URL(req.url, 'http://localhost');
+  const html = pages[pathname];
+  const file = html ? null : siteFile(pathname);
+  if (!html && !file) {
+    res.writeHead(404, { 'content-type': 'text/plain' });
+    res.end('not found');
+    return;
+  }
+  res.writeHead(200, { 'content-type': html ? TYPES['.html'] : (TYPES[extname(file)] ?? 'application/octet-stream') });
+  res.end(html ?? readFileSync(file));
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 for (let i = 0; ; i++) {
   try {
-    if ((await fetch(`${origin}/plan`)).ok) break;
+    if ((await fetch(`${origin}/`)).ok) break;
   } catch (err) {
     if (i > 50) throw err;
   }
@@ -242,17 +272,20 @@ for (let i = 0; ; i++) {
 }
 
 const SHOTS = [
-  { path: '/plan', name: 'plan', scroll: 'top' },
-  { path: '/run', name: 'execute-pr', scroll: 'bottom' },
-  { path: '/pr', name: 'pull-request', scroll: 'top' },
+  { path: '/', name: 'home', scroll: 'top' },
+  { path: '/demo/run', name: 'execute-pr', scroll: 'bottom' },
+  { path: '/demo/pr', name: 'pull-request', scroll: 'top' },
+];
+const SIZES = [
+  ['desktop', { viewport: { width: 1280, height: 800 } }],
+  ['mobile', devices['iPhone 13']],
 ];
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH, args: ['--no-sandbox'] });
 try {
   mkdirSync(OUT, { recursive: true });
-  for (const [size, options] of [
-    ['desktop', { viewport: { width: 1280, height: 800 } }],
-    ['mobile', devices['iPhone 13']],
-  ]) {
+  const keep = new Set(SHOTS.flatMap((shot) => SIZES.map(([size]) => `${shot.name}-${size}.png`)));
+  for (const old of readdirSync(OUT)) if (old.endsWith('.png') && !keep.has(old)) rmSync(join(OUT, old));
+  for (const [size, options] of SIZES) {
     const context = await browser.newContext(options);
     const tab = await context.newPage();
     for (const shot of SHOTS) {
