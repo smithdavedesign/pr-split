@@ -285,7 +285,8 @@ Requirements:
 
 ```bash
 npm install            # one runtime dependency: yaml
-npm test               # vitest: 271 tests, 1 opt-in live Ollama test skipped
+npm test               # vitest: 307 tests, 1 opt-in live Ollama test skipped
+npm run build          # the website (site/) into dist/; see LAUNCH-READY.md
 npm run screenshots    # regenerates docs/screenshots (needs CHROMIUM_PATH; not part of npm test)
 
 # inside any git repo, on the branch you want to split:
@@ -354,14 +355,17 @@ M1 and M2 still pass, unchanged:
 - M2: N branches in CI; each passes validation; each is based on the previous layer; no extra
   files.
 
-`npm test`: **271 passed, 1 skipped** (the opt-in live Ollama test, `PR_SPLIT_LIVE_OLLAMA=1`).
+`npm test`: **271 passed, 1 skipped** at M3 (the opt-in live Ollama test, `PR_SPLIT_LIVE_OLLAMA=1`);
+307 passed after go-live added the website tests (`test/site.test.js`).
 
 ## Infrastructure
 
-None requested, and there is no `.provision` file. M3 needs no database, API key or hosted service:
+The CLI needs no database, API key or hosted service:
 - PRs are opened by the user's own `gh` login, which pr-split never reads.
 - Tests use the stand-in `gh`.
-- Payments aren't built: there's no REVENUE.md and no pricing decision (see "What's left").
+
+Go-live added a static website (`site/`, deployed to Vercel) and a `.provision` file asking for the
+Vercel project and a Stripe payment link. See LAUNCH-READY.md.
 
 ## Decisions (made without a human; recorded here)
 
@@ -427,9 +431,8 @@ None requested, and there is no `.provision` file. M3 needs no database, API key
   verifiable here).
 - **Fork workflows** (a stack pushed to a fork) aren't supported. GitHub doesn't support
   cross-fork stacks either.
-- **Taking money.** There's no REVENUE.md. REVIEW.md scores the idea 3/10, with no paid path for
-  a solo CLI. A pricing decision has to come first; possible routes are a paid team tier or a
-  hosted GitHub App.
+- **Taking money.** REVENUE.md now sets $9 once. The website's Buy button links to a Stripe payment
+  link (LAUNCH-READY.md). The CLI doesn't gate any feature behind it.
 - No timeout for validation commands. No baseline validation of the base branch.
 - The M2 script's push still uses `--force-with-lease` without `--force-if-includes` (see Review).
 - CI covers Linux only. No npm publish workflow. No OpenAI/Anthropic fallback.
