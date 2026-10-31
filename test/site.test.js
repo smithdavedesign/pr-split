@@ -316,7 +316,7 @@ describe('beacon (site/public/site.js)', () => {
   it('POSTs {slug, kind, referrer} as JSON to RepoHQ, keepalive and without cookies', () => {
     const win = fakeWindow();
     expect(beacon.signal(win, 'visit')).toBe(true);
-    expect(win.fetch).toHaveBeenCalledWith('https://repohq.vercel.app/api/ideas/signal', {
+    expect(win.fetch).toHaveBeenCalledWith('https://idea-factory.1426davejobs.workers.dev/api/ideas/signal', {
       method: 'POST',
       keepalive: true,
       credentials: 'omit',

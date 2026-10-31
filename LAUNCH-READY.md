@@ -40,7 +40,7 @@ beacon for RepoHQ. It also adds the Vercel config and the `.provision` request t
    - If the variable is unset, or isn't an `https:` URL, there is no button at all. No payment link
      or key is in the code. The build log says "Buy button shown/hidden" and never prints the link.
 5. **Visit beacon** (`site/public/site.js`). It POSTs `{"slug":"pr-split","kind":…,"referrer":…}`
-   as JSON to `https://repohq.vercel.app/api/ideas/signal`, with `keepalive` and
+   as JSON to `https://idea-factory.1426davejobs.workers.dev/api/ideas/signal`, with `keepalive` and
    `credentials: "omit"`. Errors are swallowed.
    - `visit`: on every page, once per browser session (sessionStorage).
    - `activate`: **the core action is copying the install-and-run command**, with the Copy button
@@ -89,7 +89,7 @@ After deploying:
 - View the page source for the tags. A share-card preview tool shows the image, and Google's Rich
   Results Test reads the JSON-LD.
 - **Beacon:** on the production URL, the devtools Network tab shows one POST to
-  `repohq.vercel.app/api/ideas/signal` per session for `visit`. Copy the command for `activate`;
+  `idea-factory.1426davejobs.workers.dev/api/ideas/signal` per session for `visit`. Copy the command for `activate`;
   click Buy for `checkout`. A preview URL sends nothing. So does a browser after
   `localStorage.setItem('repohq:notrack', '1')`.
 
