@@ -3,7 +3,7 @@
 // command, once per browser) and "checkout" (a click on Buy). Each is a fire-and-forget POST of
 // {slug, kind, referrer}: no cookies, no identifier. Nothing is sent from preview or local builds,
 // from automated browsers (navigator.webdriver), or when localStorage "repohq:notrack" is set.
-export const SIGNAL_URL = 'https://repohq.vercel.app/api/ideas/signal';
+export const SIGNAL_URL = 'https://idea-factory.1426davejobs.workers.dev/api/ideas/signal';
 export const SLUG = 'pr-split';
 export const NOTRACK_KEY = 'repohq:notrack';
 /** Events sent at most once, and where that is remembered. "checkout" is sent on every click. */
