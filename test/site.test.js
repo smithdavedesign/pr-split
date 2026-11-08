@@ -141,8 +141,9 @@ describe('pages', () => {
     expect(jsonLd(html).offers.url).toBe(link);
   });
 
-  it('takes canonical URLs from SITE_URL, else the Vercel production domain, else the default', () => {
+  it('takes canonical URLs from SITE_URL, else the Vercel production domain, else the default (the Worker)', () => {
     expect(siteConfig({}).siteUrl).toBe(DEFAULT_SITE_URL);
+    expect(DEFAULT_SITE_URL).toBe('https://pr-split.1426davejobs.workers.dev');
     expect(siteConfig({ VERCEL_PROJECT_PRODUCTION_URL: 'pr-split-abc.vercel.app' }).siteUrl).toBe('https://pr-split-abc.vercel.app');
     expect(siteConfig({ SITE_URL: 'https://prsplit.dev/', VERCEL_PROJECT_PRODUCTION_URL: 'x.vercel.app' }).siteUrl).toBe('https://prsplit.dev');
     expect(siteConfig({ SITE_URL: 'ftp://nope' }).siteUrl).toBe(DEFAULT_SITE_URL);
@@ -152,10 +153,13 @@ describe('pages', () => {
     expect(meta(html, 'og:image')).toBe('https://prsplit.dev/og.png');
   });
 
-  it("stamps VERCEL_ENV on every page; only production turns the beacon on", () => {
-    expect(files['index.html']).toContain('<html lang="en" data-vercel-env="production">');
-    expect(renderSite(siteConfig({ VERCEL_ENV: 'preview' }))['privacy.html']).toContain('data-vercel-env="preview"');
-    expect(renderSite(siteConfig({}))['terms.html']).toContain('data-vercel-env="development"');
+  it("stamps the deploy env on every page; only production turns the beacon on", () => {
+    expect(files['index.html']).toContain('<html lang="en" data-deploy-env="production">');
+    expect(renderSite(siteConfig({ VERCEL_ENV: 'preview' }))['privacy.html']).toContain('data-deploy-env="preview"');
+    expect(renderSite(siteConfig({}))['terms.html']).toContain('data-deploy-env="development"');
+    // The Cloudflare build (npm run cf:build) counts as production.
+    expect(renderSite(siteConfig({ NEXT_PUBLIC_DEPLOY_ENV: 'production' }))['index.html']).toContain('data-deploy-env="production"');
+    expect(siteConfig({ NEXT_PUBLIC_DEPLOY_ENV: 'production', VERCEL_ENV: 'preview' }).deployEnv).toBe('production');
     for (const page of PAGES) expect(files[page.file]).toContain('<script type="module" src="/site.js"></script>');
   });
 
@@ -253,7 +257,7 @@ describe('the build (npm run build)', () => {
     }
     expect(quiet.join('\n')).toContain("STRIPE_PAYMENT_LINK isn't an https URL");
     expect(quiet.join('\n')).toContain('Buy button hidden');
-    expect(quiet.join('\n')).toContain('beacon off (VERCEL_ENV is preview)');
+    expect(quiet.join('\n')).toContain('beacon off (the deploy env is preview)');
     expect(quiet.join('\n')).not.toContain('javascript:');
   });
 
@@ -264,6 +268,19 @@ describe('the build (npm run build)', () => {
     expect(pkg.scripts.build).toBe('node site/build.mjs');
     expect(basename(DEFAULT_OUT)).toBe(vercel.outputDirectory);
     expect(pkg.files).not.toContain('site');
+  });
+
+  it('matches wrangler.jsonc: the Cloudflare Worker serves the same dist/ as static assets, counted as production', () => {
+    // wrangler.jsonc → JSON: drop // comments (none of its strings hold "//") and trailing commas.
+    const text = readFileSync(new URL('wrangler.jsonc', ROOT), 'utf8').replace(/^\s*\/\/.*$/gm, '').replace(/,(\s*[}\]])/g, '$1');
+    const worker = JSON.parse(text);
+    const pkg = JSON.parse(readFileSync(new URL('package.json', ROOT), 'utf8'));
+    expect(worker.name).toBe('pr-split'); // provision cloudflare deploy: the Worker is named after the repo
+    expect(worker.main).toBeUndefined(); // static assets only
+    expect(worker.build).toBeUndefined(); // the broker runs no build command
+    expect(worker.assets).toMatchObject({ directory: 'dist', html_handling: 'auto-trailing-slash' });
+    expect(basename(DEFAULT_OUT)).toBe(worker.assets.directory);
+    expect(pkg.scripts['cf:build']).toBe('NEXT_PUBLIC_DEPLOY_ENV=production node site/build.mjs');
   });
 });
 
@@ -297,7 +314,7 @@ function fakeWindow({ env = 'production', webdriver = false, referrer = '', loca
   const byId = Object.fromEntries(Object.values(elements).flat().filter((e) => e.id).map((e) => [e.id, e]));
   return {
     document: {
-      documentElement: { dataset: env === null ? {} : { vercelEnv: env } },
+      documentElement: { dataset: env === null ? {} : { deployEnv: env } },
       referrer,
       querySelectorAll: (selector) => elements[selector] ?? [],
       getElementById: (id) => byId[id] ?? null,

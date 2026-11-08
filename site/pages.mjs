@@ -6,7 +6,9 @@ import { HEIGHT as IMAGE_HEIGHT, WIDTH as IMAGE_WIDTH } from './og-image.mjs';
 
 const { version } = createRequire(import.meta.url)('../package.json');
 
-export const DEFAULT_SITE_URL = 'https://pr-split.vercel.app';
+// The production address: the Cloudflare Worker since 2026-11-08 (Vercel's account is blocked; it was
+// https://pr-split.vercel.app).
+export const DEFAULT_SITE_URL = 'https://pr-split.1426davejobs.workers.dev';
 export const REPO_URL = 'https://github.com/smithdavedesign/pr-split';
 export const ISSUES_URL = `${REPO_URL}/issues`;
 export const SIGNAL_URL = 'https://idea-factory.1426davejobs.workers.dev/api/ideas/signal';
@@ -18,7 +20,7 @@ export const SHARE_IMAGE = {
   height: IMAGE_HEIGHT,
   alt: 'pr-split: split one giant branch into small PRs that each build green. A stack of four validated PRs on main.',
 };
-const UPDATED = '30 October 2026';
+const UPDATED = '8 November 2026';
 const INSTALL = ['npm install -g github:smithdavedesign/pr-split', 'pr-split --base main'];
 
 /** An absolute http(s) URL's origin, or null. */
@@ -45,8 +47,9 @@ export function paymentLink(value) {
 /**
  * Build settings from the environment:
  * - STRIPE_PAYMENT_LINK: the Buy button's target; unset (or not https) hides the button.
- * - VERCEL_ENV: only "production" sends the RepoHQ beacon; previews and local builds don't.
- * - SITE_URL, else VERCEL_PROJECT_PRODUCTION_URL (Vercel's production domain): canonical URLs.
+ * - NEXT_PUBLIC_DEPLOY_ENV (set by `npm run cf:build` for the Cloudflare Worker), else Vercel's VERCEL_ENV:
+ *   only "production" sends the RepoHQ beacon; previews and local builds don't.
+ * - SITE_URL, else VERCEL_PROJECT_PRODUCTION_URL (Vercel's production domain), else the Worker: canonical URLs.
  */
 export function siteConfig(env = {}) {
   const productionHost = env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
@@ -56,7 +59,7 @@ export function siteConfig(env = {}) {
     siteUrl,
     paymentLink: paymentLink(env.STRIPE_PAYMENT_LINK),
     paymentLinkInvalid: Boolean(env.STRIPE_PAYMENT_LINK?.trim()) && !paymentLink(env.STRIPE_PAYMENT_LINK),
-    vercelEnv: env.VERCEL_ENV?.trim() || 'development',
+    deployEnv: env.NEXT_PUBLIC_DEPLOY_ENV?.trim() || env.VERCEL_ENV?.trim() || 'development',
   };
 }
 
@@ -95,7 +98,7 @@ function layout(page, config, main) {
   const url = `${config.siteUrl}${page.path}`;
   const image = `${config.siteUrl}${SHARE_IMAGE.path}`;
   return `<!doctype html>
-<html lang="en" data-vercel-env="${esc(config.vercelEnv)}">
+<html lang="en" data-deploy-env="${esc(config.deployEnv)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -205,7 +208,7 @@ function privacy() {
 <li>Each event is one request to <code>${SIGNAL_URL}</code> carrying exactly three things: the product name (<code>pr-split</code>), the event name, and the address of the other website that linked you here, if any. Links within this site are never sent. It carries no cookie and no identifier.</li>
 <li>So that each event is counted once, the script keeps a flag in your browser's session storage (<code>visit</code>) and local storage (<code>activate</code>). These flags never leave your browser.</li>
 <li>Nothing is sent from automated browsers, from preview deployments, or from a browser where local storage has <code>repohq:notrack</code> set. To opt out, run <code>localStorage.setItem('repohq:notrack', '1')</code> in your browser's console on this site.</li>
-<li>As with any website, the servers that answer (Vercel hosts this site, and RepoHQ) receive your IP address and browser type with each request. See <a href="https://vercel.com/legal/privacy-policy">Vercel's privacy policy</a>.</li>
+<li>As with any website, the servers that answer (Cloudflare hosts this site and RepoHQ's counter) receive your IP address and browser type with each request. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>.</li>
 </ul>
 
 <h2>Payments</h2>

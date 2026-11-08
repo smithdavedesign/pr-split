@@ -23,9 +23,12 @@ export function externalReferrer(referrer, origin) {
   }
 }
 
-/** Production build (the build stamps VERCEL_ENV on <html>), a person, and no opt-out. */
+/**
+ * Production build (the build stamps its deploy env on <html>: NEXT_PUBLIC_DEPLOY_ENV from `npm run cf:build` on the
+ * Cloudflare Worker, else Vercel's VERCEL_ENV), a person, and no opt-out.
+ */
 export function trackingAllowed(win) {
-  if (win.document.documentElement.dataset.vercelEnv !== 'production') return false;
+  if (win.document.documentElement.dataset.deployEnv !== 'production') return false;
   if (win.navigator.webdriver) return false;
   try {
     return win.localStorage.getItem(NOTRACK_KEY) === null;

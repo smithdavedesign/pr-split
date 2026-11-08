@@ -1,6 +1,7 @@
-// npm run build: writes the website to dist/, which Vercel serves (vercel.json).
+// npm run build: writes the website to dist/, which Vercel serves (vercel.json); npm run cf:build writes the same
+// for the Cloudflare Worker (wrangler.jsonc serves dist/ as static assets), counted as production.
 //   node site/build.mjs [--out <dir>]
-// Reads STRIPE_PAYMENT_LINK, VERCEL_ENV, SITE_URL and VERCEL_PROJECT_PRODUCTION_URL (see
+// Reads STRIPE_PAYMENT_LINK, NEXT_PUBLIC_DEPLOY_ENV, VERCEL_ENV, SITE_URL and VERCEL_PROJECT_PRODUCTION_URL (see
 // site/pages.mjs). They are baked into static files, so a changed value needs a new deployment.
 import { copyFileSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -24,7 +25,7 @@ export function buildSite({ env = process.env, outDir = DEFAULT_OUT, log = () =>
   log(
     `site: ${PAGES.length} pages for ${config.siteUrl} in ${outDir}; ` +
       `Buy button ${config.paymentLink ? 'shown' : 'hidden (STRIPE_PAYMENT_LINK unset)'}; ` +
-      `beacon ${config.vercelEnv === 'production' ? 'on' : `off (VERCEL_ENV is ${config.vercelEnv})`}`,
+      `beacon ${config.deployEnv === 'production' ? 'on' : `off (the deploy env is ${config.deployEnv})`}`,
   );
   return config;
 }

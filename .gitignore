@@ -1,3 +1,5 @@
 node_modules/
 pr-split.sh
 dist/
+# Cloudflare: wrangler's local state.
+.wrangler/
