@@ -284,6 +284,8 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PAT
 try {
   mkdirSync(OUT, { recursive: true });
   const keep = new Set(SHOTS.flatMap((shot) => SIZES.map(([size]) => `${shot.name}-${size}.png`)));
+  // Only PNGs directly in docs/screenshots/: the live site's screenshots in docs/screenshots/live/ (the README's first
+  // section, taken against the deployed Worker) stay.
   for (const old of readdirSync(OUT)) if (old.endsWith('.png') && !keep.has(old)) rmSync(join(OUT, old));
   for (const [size, options] of SIZES) {
     const context = await browser.newContext(options);
