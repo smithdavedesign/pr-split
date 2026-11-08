@@ -1,0 +1,15 @@
+// pr-split's website on Cloudflare Workers (free plan): static assets only, no Worker code. `npm run cf:build` writes
+// dist/ (the same pages Vercel served) counted as production, so the visit beacon counts the Worker's visitors.
+// Vercel ignores this file. Deploy with the credential broker, which injects the token:
+//   provision cloudflare deploy pr-split <this checkout>
+{
+  "name": "pr-split",
+  "compatibility_date": "2026-10-15",
+  "assets": {
+    "directory": "dist",
+    // /privacy → privacy.html, like Vercel's cleanUrls.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  "workers_dev": true
+}

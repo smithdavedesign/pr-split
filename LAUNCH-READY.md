@@ -50,7 +50,8 @@ beacon for RepoHQ. It also adds the Vercel config and the `.provision` request t
      it is `null`.
    - Nothing is sent when:
      - `navigator.webdriver` is true;
-     - the build wasn't a production build (`VERCEL_ENV`, stamped on `<html data-vercel-env>`);
+     - the build wasn't a production build (`NEXT_PUBLIC_DEPLOY_ENV` from `npm run cf:build`, else `VERCEL_ENV`,
+       stamped on `<html data-deploy-env>`);
      - localStorage `repohq:notrack` is set to any value;
      - storage is blocked.
 6. **Deployment.**
@@ -108,7 +109,8 @@ After deploying:
   1. `SITE_URL`, if set;
   2. Vercel's `VERCEL_PROJECT_PRODUCTION_URL`, which is available at build time, is set even in
      previews, and is the shortest custom domain or the vercel.app one;
-  3. otherwise `https://pr-split.vercel.app`.
+  3. otherwise `https://pr-split.1426davejobs.workers.dev` (the Cloudflare Worker, production since 2026-11-08;
+     it was `https://pr-split.vercel.app`).
 
   So a custom domain or a taken project name needs no code change.
 - **"activate" = copying the install command.**
