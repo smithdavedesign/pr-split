@@ -8,9 +8,9 @@ The website runs on a Cloudflare Worker, static assets on the free plan, since 2
 
 | | Desktop (1440×900) | Phone (390×844) |
 |---|---|---|
-| The landing page: what pr-split does, the install command and a real run | <img src="docs/screenshots/live-home-desktop.png" alt="The landing page: what pr-split does, the install command and a real run, desktop" width="520"> | <img src="docs/screenshots/live-home-phone.png" alt="The landing page: what pr-split does, the install command and a real run, phone" width="200"> |
-| The core action: Copy puts the install command on the clipboard | <img src="docs/screenshots/live-copied-desktop.png" alt="The core action: Copy puts the install command on the clipboard, desktop" width="520"> | <img src="docs/screenshots/live-copied-phone.png" alt="The core action: Copy puts the install command on the clipboard, phone" width="200"> |
-| The privacy page: the three anonymous visit events, and who hosts the site | <img src="docs/screenshots/live-privacy-desktop.png" alt="The privacy page: the three anonymous visit events, and who hosts the site, desktop" width="520"> | <img src="docs/screenshots/live-privacy-phone.png" alt="The privacy page: the three anonymous visit events, and who hosts the site, phone" width="200"> |
+| The landing page: what pr-split does, the install command and a real run | <img src="docs/screenshots/live/home-desktop.png" alt="The landing page: what pr-split does, the install command and a real run, desktop" width="520"> | <img src="docs/screenshots/live/home-phone.png" alt="The landing page: what pr-split does, the install command and a real run, phone" width="200"> |
+| The core action: Copy puts the install command on the clipboard | <img src="docs/screenshots/live/copied-desktop.png" alt="The core action: Copy puts the install command on the clipboard, desktop" width="520"> | <img src="docs/screenshots/live/copied-phone.png" alt="The core action: Copy puts the install command on the clipboard, phone" width="200"> |
+| The privacy page: the three anonymous visit events, and who hosts the site | <img src="docs/screenshots/live/privacy-desktop.png" alt="The privacy page: the three anonymous visit events, and who hosts the site, desktop" width="520"> | <img src="docs/screenshots/live/privacy-phone.png" alt="The privacy page: the three anonymous visit events, and who hosts the site, phone" width="200"> |
 
 ## Screenshots
 
